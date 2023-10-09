@@ -1,0 +1,3 @@
+[submodule "src/thirdparty/speedykeyv"]
+	path = src/thirdparty/speedykeyv
+	url = https://github.com/ozxybox/SpeedyKeyV
