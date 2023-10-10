@@ -20,6 +20,16 @@ class EntityGraph : public QWidget {
 public:
 	explicit EntityGraph(QWidget* parent = nullptr);
 
+	[[nodiscard]] const EntityGraphModel& model() const {
+		return this->graphModel;
+	}
+
+	[[nodiscard]] EntityGraphModel& model() {
+		return this->graphModel;
+	}
+
+	void clear();
+
 private:
 	EntityGraphModel graphModel;
 

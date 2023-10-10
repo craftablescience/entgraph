@@ -12,23 +12,6 @@ EntityGraph::EntityGraph(QWidget* parent)
 	this->graphView.setStyleSheet(R"(QFrame { border: none; })");
 	QtNodes::ConnectionStyle::setConnectionStyle(R"({ "ConnectionStyle": { "UseDataDefinedColors": true } })");
 
-	// todo: remove sample code
-	{
-		NodeId id1 = this->graphModel.addNode("logic_auto");
-		this->graphModel.setNodeData(id1, NodeRole::Caption, "logic_auto");
-		this->graphModel.setNodeData(id1, NodeRole::Position, QPointF(0, 0));
-		this->graphModel.setNodeData(id1, NodeRole::InPortCount, 3);
-		this->graphModel.setNodeData(id1, NodeRole::OutPortCount, 5);
-
-		NodeId id2 = this->graphModel.addNode("logic_relay");
-		this->graphModel.setNodeData(id2, NodeRole::Caption, "logic_relay");
-		this->graphModel.setNodeData(id2, NodeRole::Position, QPointF(300, 300));
-		this->graphModel.setNodeData(id2, NodeRole::InPortCount, 3);
-		this->graphModel.setNodeData(id2, NodeRole::OutPortCount, 5);
-
-		this->graphModel.addConnection({id1, 2, id2, 1});
-	}
-
 	auto* layout = new QHBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);
 
@@ -49,4 +32,8 @@ EntityGraph::EntityGraph(QWidget* parent)
 		this->graphModel.setNodeData(newId, NodeRole::Position, posView);
 	});
 	this->graphView.insertAction(this->graphView.actions().front(), this->addEntityAction);
+}
+
+void EntityGraph::clear() {
+	this->graphModel.clear();
 }
