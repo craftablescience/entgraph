@@ -7,9 +7,14 @@
 #include "cfg/Config.h"
 #include "Options.h"
 #include "Window.h"
+#include "FGDParser.h"
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
+
+    FGD::FGDTokenizer tokenizer("/media/trico/Storage Drive X2/SteamLibrary/steamapps/common/Portal 2 Community Edition/p2ce/p2ce.fgd");
+
+
 
     QCoreApplication::setOrganizationName(ENTGRAPH_ORGANIZATION_NAME);
     QCoreApplication::setApplicationName(ENTGRAPH_PROJECT_NAME);

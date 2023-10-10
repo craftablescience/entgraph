@@ -6,11 +6,21 @@ project(entgraph
 set(PROJECT_NAME_PRETTY "EntGraph" CACHE STRING "" FORCE)
 set(PROJECT_ORGANIZATION_NAME "craftablescience" CACHE STRING "" FORCE)
 set(PROJECT_HOMEPAGE_URL_API "https://api.github.com/repos/craftablescience/entgraph" CACHE STRING "" FORCE)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 include(GNUInstallDirs)
 
 # Options
 option(ENTGRAPH_BUILD_INSTALLER "Build installer for ${PROJECT_NAME_PRETTY} application" ON)
+
+option(SLOME_UNIFIED_FGD "Unified FDD are FGD Alterations made by TeamSpen's HammerAddons.
+[https://github.com/TeamSpen210/HammerAddons/wiki/Unified-FGD]
+and is fully backwards compatible with Valve's FGD standard." OFF)
+
+message(STATUS "SLOME_UNIFIED_FGD: ${SLOME_UNIFIED_FGD}")
+
+if(SLOME_UNIFIED_FGD)
+	add_definitions(-DSLOME_UNIFIED_FGD)
+endif ()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
@@ -60,7 +70,7 @@ configure_file(
 		"${CMAKE_CURRENT_SOURCE_DIR}/installer/deb/${PROJECT_NAME}.sh")
 
 # Add sources and create executable
-list(APPEND ${PROJECT_NAME}_SOURCES
+set( ${PROJECT_NAME}_SOURCES
 		"${CMAKE_CURRENT_SOURCE_DIR}/res/res.qrc"
 
         "${CMAKE_CURRENT_SOURCE_DIR}/src/cfg/Config.h"
@@ -69,7 +79,10 @@ list(APPEND ${PROJECT_NAME}_SOURCES
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Options.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Options.h"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Window.cpp"
-		"${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h")
+		"${CMAKE_CURRENT_SOURCE_DIR}/src/Window.h"
+		${CMAKE_CURRENT_SOURCE_DIR}/src/FGDParser.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/FGDParser.h
+)
 if(WIN32)
 	list(APPEND ${PROJECT_NAME}_SOURCES
 			"${CMAKE_CURRENT_SOURCE_DIR}/res/icon.rc")
