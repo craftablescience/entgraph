@@ -174,26 +174,34 @@ bool Window::load(const QString& path) {
 	auto& model = this->graph->model();
 	QMap<QString, NodeId> namedEntityIds;
 
+    // todo: fgd parser
+    QMap<QString, QMap<QString, PortIndex>> entityInputs{
+            {"logic_relay", {{"Enable", 0}, {"Disable", 1}}},
+    };
+
 	for (auto& entity : entities) {
 		NodeId id = model.addNode(entity.classname, entity.id);
 		if (!entity.targetname.isEmpty()) {
 			namedEntityIds[entity.targetname] = id;
 		}
-		model.setNodeData(id, NodeRole::Caption, entity.targetname.isEmpty() ? entity.classname : entity.targetname + "(" + entity.classname + ")");
+		model.setNodeData(id, NodeRole::Caption, entity.targetname.isEmpty() ? entity.classname : entity.targetname + " (" + entity.classname + ")");
 		model.setNodeData(id, NodeRole::Position, QPointF(0, 0));
-		model.setNodeData(id, NodeRole::InPortCount, 1);
-		model.setPortData(id, PortType::In, 0, QVariant::fromValue(ConnectionPolicy::Many), PortRole::ConnectionPolicyRole);
-		model.setNodeData(id, NodeRole::OutPortCount, entity.connections.length());
 	}
 	for (auto& entity : entities) {
-		if (entity.connections.isEmpty()) {
-			continue;
-		}
-		for (auto& connection : entity.connections) {
-			if (namedEntityIds.contains(connection.targetname)) {
-				model.addConnection({static_cast<NodeId>(entity.id), 0, namedEntityIds[connection.targetname], 0});
+        NodeId id = entity.id;
+        model.setNodeData(id, NodeRole::InPortCount, entityInputs[entity.classname].size());
+        for (PortIndex i = 0; i < entityInputs[entity.classname].size(); i++) {
+            model.setPortData(id, PortType::In, i, QVariant::fromValue(ConnectionPolicy::Many), PortRole::ConnectionPolicyRole);
+            model.setPortData(id, PortType::In, i, entityInputs[entity.classname].key(i), PortRole::Caption);
+        }
+        model.setNodeData(id, NodeRole::OutPortCount, entity.connections.length());
+        for (PortIndex i = 0; i < entity.connections.length(); i++) {
+            model.setPortData(id, PortType::Out, i, QVariant::fromValue(ConnectionPolicy::Many), PortRole::ConnectionPolicyRole);
+            model.setPortData(id, PortType::Out, i, entity.connections[i].output, PortRole::Caption);
+            if (namedEntityIds.contains(entity.connections[i].targetname)) {
+				model.addConnection({static_cast<NodeId>(entity.id), i, namedEntityIds[entity.connections[i].targetname], entityInputs[entity.targetname][entity.connections[i].output]});
 			}
-		}
+        }
 	}
 #endif
 
