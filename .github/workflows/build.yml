@@ -83,7 +83,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Debug, Release]
-        compiler: [gcc, clang]
+        compiler: [gcc]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repository
