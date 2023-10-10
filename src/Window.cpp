@@ -13,6 +13,7 @@
 
 #include "cfg/Config.h"
 #include "graph/EntityGraph.h"
+#include "wrapper/VMFWrapper.h"
 #include "Options.h"
 
 constexpr auto VMF_SAVE_FILTER = "Valve Map Format (*.vmf);;All files (*.*)";
@@ -87,6 +88,7 @@ void Window::open(const QString& startPath) {
 	if (!this->load(path)) {
 		this->clearContents();
 	}
+	this->graph->setDisabled(false);
 }
 
 void Window::save() {
@@ -142,6 +144,10 @@ void Window::clearContents() {
 	if (this->modified && this->promptUserToKeepModifications()) {
 		return;
 	}
+
+	this->graph->clear();
+	this->graph->setDisabled(true);
+
 	this->markModified(false);
 	this->freezeActions(true, false); // Leave creation actions unfrozen
 }
@@ -154,15 +160,45 @@ void Window::closeEvent(QCloseEvent* event) {
 	event->accept();
 }
 
-bool Window::load(const QString& /*path*/) {
+bool Window::load(const QString& path) {
 	this->clearContents();
 	this->freezeActions(true);
 
-	// todo: load
-	return false;
+	// todo: load map
+#if 0
+	VMFWrapper vmfWrapper{path};
+	if (!vmfWrapper) {
+		return false;
+	}
+	auto entities = vmfWrapper.getEntities();
+	auto& model = this->graph->model();
+	QMap<QString, NodeId> namedEntityIds;
 
-	//this->freezeActions(false);
-	//return true;
+	for (auto& entity : entities) {
+		NodeId id = model.addNode(entity.classname, entity.id);
+		if (!entity.targetname.isEmpty()) {
+			namedEntityIds[entity.targetname] = id;
+		}
+		model.setNodeData(id, NodeRole::Caption, entity.targetname.isEmpty() ? entity.classname : entity.targetname + "(" + entity.classname + ")");
+		model.setNodeData(id, NodeRole::Position, QPointF(0, 0));
+		model.setNodeData(id, NodeRole::InPortCount, 1);
+		model.setPortData(id, PortType::In, 0, QVariant::fromValue(ConnectionPolicy::Many), PortRole::ConnectionPolicyRole);
+		model.setNodeData(id, NodeRole::OutPortCount, entity.connections.length());
+	}
+	for (auto& entity : entities) {
+		if (entity.connections.isEmpty()) {
+			continue;
+		}
+		for (auto& connection : entity.connections) {
+			if (namedEntityIds.contains(connection.targetname)) {
+				model.addConnection({static_cast<NodeId>(entity.id), 0, namedEntityIds[connection.targetname], 0});
+			}
+		}
+	}
+#endif
+
+	this->freezeActions(false);
+	return true;
 }
 
 bool Window::promptUserToKeepModifications() {

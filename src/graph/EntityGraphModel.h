@@ -57,6 +57,8 @@ public:
 
 	NodeId addNode(QString nodeType) override;
 
+	NodeId addNode(QString nodeType, NodeId nodeId);
+
 	/**
 	 * Connection is possible when graph contains no connectivity data
 	 * in both directions `Out -> In` and `In -> Out`. We're going to
@@ -87,6 +89,8 @@ public:
 	void loadNode(const QJsonObject& nodeJson) override;
 
 	NodeId newNodeId() override;
+
+	void clear();
 
 private:
 	std::unordered_set<NodeId> nodeIds;
