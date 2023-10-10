@@ -4,3 +4,6 @@
 [submodule "src/thirdparty/nodeeditor"]
 	path = src/thirdparty/nodeeditor
 	url = https://github.com/craftablescience/nodeeditor
+[submodule "src/thirdparty/vmfpp"]
+	path = src/thirdparty/vmfpp
+	url = https://github.com/craftablescience/vmfpp

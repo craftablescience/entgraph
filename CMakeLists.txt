@@ -49,9 +49,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-# SpeedyKeyV
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/speedykeyv")
-
 # QtNodes
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/nodeeditor")
 set_target_properties(
@@ -59,6 +56,12 @@ set_target_properties(
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+# SpeedyKeyV
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/speedykeyv")
+
+# vmfpp
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/vmfpp")
 
 # Config file
 configure_file(
@@ -82,6 +85,9 @@ set(${PROJECT_NAME}_SOURCES
         "${CMAKE_CURRENT_SOURCE_DIR}/src/graph/EntityGraphModel.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/graph/EntityGraphModel.h"
 
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/wrapper/VMFWrapper.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/wrapper/VMFWrapper.h"
+
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Main.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Options.cpp"
 		"${CMAKE_CURRENT_SOURCE_DIR}/src/Options.h"
@@ -95,14 +101,15 @@ endif()
 add_executable(
 		${PROJECT_NAME} WIN32
 		${${PROJECT_NAME}_SOURCES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Core Qt::Gui Qt::Widgets Qt::OpenGL keyvalues QtNodes)
+target_link_libraries(${PROJECT_NAME} PRIVATE Qt::Core Qt::Gui Qt::Widgets Qt::OpenGL QtNodes keyvalues vmfpp)
 target_include_directories(
 		${PROJECT_NAME} PRIVATE
 		"${QT_INCLUDE}"
 		"${QT_INCLUDE}/QtCore"
 		"${QT_INCLUDE}/QtGui"
 		"${QT_INCLUDE}/QtWidgets"
-		"${QT_INCLUDE}/QtOpenGL")
+		"${QT_INCLUDE}/QtOpenGL"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/thirdparty/speedykeyv")
 if(WIN32 AND MSVC)
 	target_link_options(
 			${PROJECT_NAME} PRIVATE

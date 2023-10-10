@@ -5,3 +5,4 @@
 ### Acknowledgements
 - SpeedyKeyV - OzxyBox
 - QtNodes - paceholder
+- vmfpp - craftablescience
