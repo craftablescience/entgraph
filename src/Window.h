@@ -6,6 +6,8 @@ class QAction;
 class QCloseEvent;
 class QSettings;
 
+class EntityGraph;
+
 class Window : public QMainWindow {
 	Q_OBJECT;
 
@@ -32,6 +34,8 @@ protected:
 	void closeEvent(QCloseEvent* event) override;
 
 private:
+	EntityGraph* graph;
+
 	QAction* openAction;
 	QAction* saveAction;
 	QAction* saveAsAction;
