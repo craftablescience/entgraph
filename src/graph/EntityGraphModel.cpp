@@ -4,7 +4,7 @@ std::unordered_set<NodeId> EntityGraphModel::allNodeIds() const {
 	return this->nodeIds;
 }
 
-std::unordered_set<ConnectionId> EntityGraphModel::allConnectionIds(const NodeId nodeId) const {
+std::unordered_set<ConnectionId> EntityGraphModel::allConnectionIds(NodeId nodeId) const {
 	std::unordered_set<ConnectionId> result;
 	std::copy_if(this->connectivity.begin(), this->connectivity.end(), std::inserter(result, std::end(result)), [&nodeId](const ConnectionId& cid) {
 		return cid.inNodeId == nodeId || cid.outNodeId == nodeId;
@@ -20,126 +20,161 @@ std::unordered_set<ConnectionId> EntityGraphModel::connections(NodeId nodeId, Po
 	return result;
 }
 
-bool EntityGraphModel::connectionExists(const ConnectionId connectionId) const {
+bool EntityGraphModel::connectionExists(ConnectionId connectionId) const {
 	return this->connectivity.find(connectionId) != this->connectivity.end();
 }
 
-NodeId EntityGraphModel::addNode(const QString nodeType) {
+NodeId EntityGraphModel::addNode(QString nodeType) {
 	const auto newId = this->newNodeId();
 	this->nodeIds.insert(newId);
+	this->nodes[newId] = NodeData{};
+	this->nodes[newId].type = nodeType;
 	Q_EMIT this->nodeCreated(newId);
 	return newId;
 }
 
-bool EntityGraphModel::connectionPossible(const ConnectionId connectionId) const {
+bool EntityGraphModel::connectionPossible(ConnectionId connectionId) const {
 	return this->connectivity.find(connectionId) == this->connectivity.end();
 }
 
-void EntityGraphModel::addConnection(const ConnectionId connectionId) {
+void EntityGraphModel::addConnection(ConnectionId connectionId) {
 	this->connectivity.insert(connectionId);
 	Q_EMIT this->connectionCreated(connectionId);
 }
 
-bool EntityGraphModel::nodeExists(const NodeId nodeId) const {
+bool EntityGraphModel::nodeExists(NodeId nodeId) const {
 	return this->nodeIds.find(nodeId) != this->nodeIds.end();
 }
 
 QVariant EntityGraphModel::nodeData(NodeId nodeId, NodeRole role) const {
-	QVariant result;
 	switch (role) {
 		case NodeRole::Type:
-			result = QString("Default Node Type");
-			break;
+			return this->nodes[nodeId].type;
 		case NodeRole::Position:
-			result = this->nodeGeometryData[nodeId].pos;
-			break;
+			return this->nodes[nodeId].position;
 		case NodeRole::Size:
-			result = this->nodeGeometryData[nodeId].size;
-			break;
+			return this->nodes[nodeId].size;
 		case NodeRole::CaptionVisible:
-			result = true;
-			break;
+			return true;
 		case NodeRole::Caption:
-			result = QString("Node");
-			break;
-		case NodeRole::Style: {
-			auto style = StyleCollection::nodeStyle();
-			result = style.toJson().toVariantMap();
-			break;
-		}
+			return this->nodes[nodeId].caption;
+		case NodeRole::Style:
+			return StyleCollection::nodeStyle().toJson().toVariantMap();
 		case NodeRole::InternalData:
-			break;
+			return {};
 		case NodeRole::InPortCount:
-			result = 1u;
-			break;
+			return static_cast<PortIndex>(this->nodes[nodeId].inputs.size());
 		case NodeRole::OutPortCount:
-			result = 1u;
-			break;
+			return static_cast<PortIndex>(this->nodes[nodeId].outputs.size());
 		case NodeRole::Widget:
-			result = QVariant();
-			break;
+			return {};
 	}
-	return result;
 }
 
 bool EntityGraphModel::setNodeData(NodeId nodeId, NodeRole role, QVariant value) {
-	bool result = false;
 	switch (role) {
 		case NodeRole::Type:
-			break;
-		case NodeRole::Position: {
-			this->nodeGeometryData[nodeId].pos = value.value<QPointF>();
+			this->nodes[nodeId].type = value.value<QString>();
+			return true;
+		case NodeRole::Position:
+			this->nodes[nodeId].position = value.value<QPointF>();
 			Q_EMIT this->nodePositionUpdated(nodeId);
-			result = true;
-			break;
-		}
-		case NodeRole::Size: {
-			this->nodeGeometryData[nodeId].size = value.value<QSize>();
-			result = true;
-			break;
-		}
+			return true;
+		case NodeRole::Size:
+			this->nodes[nodeId].size = value.value<QSize>();
+			return true;
 		case NodeRole::CaptionVisible:
-			break;
+			return false;
 		case NodeRole::Caption:
-			break;
+			this->nodes[nodeId].caption = value.value<QString>();
+			return true;
 		case NodeRole::Style:
-			break;
+			return false;
 		case NodeRole::InternalData:
-			break;
+			return false;
 		case NodeRole::InPortCount:
-			break;
+			this->nodes[nodeId].inputs.resize(value.value<PortIndex>());
+			return true;
 		case NodeRole::OutPortCount:
-			break;
+			this->nodes[nodeId].outputs.resize(value.value<PortIndex>());
+			return true;
 		case NodeRole::Widget:
-			break;
+			return false;
 	}
-	return result;
+	return false;
 }
 
 QVariant EntityGraphModel::portData(NodeId nodeId, PortType portType, PortIndex portIndex, PortRole role) const {
 	switch (role) {
 		case PortRole::Data:
+			return {};
 		case PortRole::DataType:
+			if (portType == PortType::In) {
+				return this->nodes[nodeId].inputs.at(portIndex).type;
+			} else if (portType == PortType::Out) {
+				return this->nodes[nodeId].outputs.at(portIndex).type;
+			}
 			return {};
 		case PortRole::ConnectionPolicyRole:
-			return QVariant::fromValue(ConnectionPolicy::One);
+			if (portType == PortType::In) {
+				return QVariant::fromValue(this->nodes[nodeId].inputs.at(portIndex).allowMultipleConnections ? ConnectionPolicy::Many : ConnectionPolicy::One);
+			} else if (portType == PortType::Out) {
+				return QVariant::fromValue(this->nodes[nodeId].outputs.at(portIndex).allowMultipleConnections ? ConnectionPolicy::Many : ConnectionPolicy::One);
+			}
+			return {};
 		case PortRole::CaptionVisible:
 			return true;
 		case PortRole::Caption:
-			if (portType == PortType::In)
-				return QString::fromUtf8("Port In");
-			else
-				return QString::fromUtf8("Port Out");
+			if (portType == PortType::In) {
+				return this->nodes[nodeId].inputs.at(portIndex).caption;
+			} else if (portType == PortType::Out) {
+				return this->nodes[nodeId].outputs.at(portIndex).caption;
+			}
+			return {};
 	}
 	return {};
 }
 
 bool EntityGraphModel::setPortData(NodeId nodeId, PortType portType, PortIndex portIndex, const QVariant& value, PortRole role) {
-	// todo: what does this do
+	switch (role) {
+		case PortRole::Data:
+			return false;
+		case PortRole::DataType:
+			if (portType == PortType::In) {
+				this->nodes[nodeId].inputs[portIndex].type = value.value<QString>();
+				return true;
+			} else if (portType == PortType::Out) {
+				this->nodes[nodeId].outputs[portIndex].type = value.value<QString>();
+				return true;
+			}
+			return false;
+		case PortRole::ConnectionPolicyRole: {
+			bool allowMultipleConnections = value.value<ConnectionPolicy>() == ConnectionPolicy::Many;
+			if (portType == PortType::In) {
+				this->nodes[nodeId].inputs[portIndex].allowMultipleConnections = allowMultipleConnections;
+				return true;
+			} else if (portType == PortType::Out) {
+				this->nodes[nodeId].outputs[portIndex].allowMultipleConnections = allowMultipleConnections;
+				return true;
+			}
+			return false;
+		}
+		case PortRole::CaptionVisible:
+			return false;
+		case PortRole::Caption:
+			if (portType == PortType::In) {
+				this->nodes[nodeId].inputs[portIndex].caption = value.value<QString>();
+				return true;
+			} else if (portType == PortType::Out) {
+				this->nodes[nodeId].outputs[portIndex].caption = value.value<QString>();
+				return true;
+			}
+			return false;
+	}
 	return false;
 }
 
-bool EntityGraphModel::deleteConnection(const ConnectionId connectionId) {
+bool EntityGraphModel::deleteConnection(ConnectionId connectionId) {
 	bool disconnected = false;
 	if (auto it = this->connectivity.find(connectionId); it != this->connectivity.end()) {
 		disconnected = true;
@@ -151,19 +186,19 @@ bool EntityGraphModel::deleteConnection(const ConnectionId connectionId) {
 	return disconnected;
 }
 
-bool EntityGraphModel::deleteNode(const NodeId nodeId) {
+bool EntityGraphModel::deleteNode(NodeId nodeId) {
 	// Delete connections to this node first.
 	auto connectionIds = this->allConnectionIds(nodeId);
 	for (auto &cId : connectionIds) {
 		this->deleteConnection(cId);
 	}
 	this->nodeIds.erase(nodeId);
-	this->nodeGeometryData.erase(nodeId);
+	this->nodes.erase(nodeId);
 	Q_EMIT this->nodeDeleted(nodeId);
 	return true;
 }
 
-QJsonObject EntityGraphModel::saveNode(const NodeId nodeId) const {
+QJsonObject EntityGraphModel::saveNode(NodeId nodeId) const {
 	QJsonObject nodeJson;
 
 	nodeJson["id"] = static_cast<qint64>(nodeId);

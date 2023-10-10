@@ -22,9 +22,26 @@ class EntityGraphModel : public QtNodes::AbstractGraphModel {
 	Q_OBJECT;
 
 public:
-	struct NodeGeometryData {
+	struct NodePortInput {
+		QString type;
+		QString caption;
+		bool allowMultipleConnections;
+	};
+
+	struct NodePortOutput : public NodePortInput {
+		QString parameter;
+		int delay;
+	};
+
+	struct NodeData {
 		QSize size;
-		QPointF pos;
+		QPointF position;
+
+		QString type;
+		QString caption;
+
+		QList<NodePortInput> inputs;
+		QList<NodePortOutput> outputs;
 	};
 
 public:
@@ -75,9 +92,10 @@ private:
 	std::unordered_set<NodeId> nodeIds;
 	NodeId nextNodeId = 0;
 
-	mutable std::unordered_map<NodeId, NodeGeometryData> nodeGeometryData;
-
 	/// Contains the graph connectivity information in both directions, i.e. from Node1 to Node2 and from Node2 to Node1
 	/// This one is user-defined and can be changed
 	std::unordered_set<ConnectionId> connectivity;
+
+	/// Node data
+	mutable std::unordered_map<NodeId, NodeData> nodes;
 };
