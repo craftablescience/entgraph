@@ -4,3 +4,4 @@
 
 ### Acknowledgements
 - SpeedyKeyV - OzxyBox
+- QtNodes - paceholder

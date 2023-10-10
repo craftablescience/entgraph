@@ -12,6 +12,7 @@
 #include <QStyleFactory>
 
 #include "cfg/Config.h"
+#include "graph/EntityGraph.h"
 #include "Options.h"
 
 constexpr auto VMF_SAVE_FILTER = "Valve Map Format (*.vmf);;All files (*.*)";
@@ -25,22 +26,22 @@ Window::Window(QSettings& options, QWidget* parent)
 	// File menu
 	auto* fileMenu = this->menuBar()->addMenu(tr("&File"));
 
-	this->openAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DirIcon), tr("&Open..."), Qt::CTRL | Qt::Key_O, [=] {
+	this->openAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DirIcon), tr("&Open..."), Qt::CTRL | Qt::Key_O, [&] {
 		this->open();
 	});
-	this->saveAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), tr("&Save"), Qt::CTRL | Qt::Key_S, [=] {
+	this->saveAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), tr("&Save"), Qt::CTRL | Qt::Key_S, [&] {
 		this->save();
 	});
-	this->saveAsAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), tr("Save &As..."), Qt::CTRL | Qt::SHIFT | Qt::Key_S, [=] {
+	this->saveAsAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogSaveButton), tr("Save &As..."), Qt::CTRL | Qt::SHIFT | Qt::Key_S, [&] {
 		this->saveAs();
 	});
-	this->closeFileAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_BrowserReload), tr("&Close"), Qt::CTRL | Qt::Key_X, [=] {
+	this->closeFileAction = fileMenu->addAction(this->style()->standardIcon(QStyle::SP_BrowserReload), tr("&Close"), Qt::CTRL | Qt::Key_X, [&] {
 		this->closeFile();
 	});
 
 	fileMenu->addSeparator();
 
-	fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogCancelButton), tr("&Exit"), Qt::ALT | Qt::Key_F4, [=] {
+	fileMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogCancelButton), tr("&Exit"), Qt::ALT | Qt::Key_F4, [&] {
 		this->close();
 	});
 
@@ -64,12 +65,15 @@ Window::Window(QSettings& options, QWidget* parent)
 
 	// Help menu
 	auto* helpMenu = this->menuBar()->addMenu(tr("&Help"));
-	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), tr("&About"), Qt::Key_F1, [=] {
+	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), tr("&About"), Qt::Key_F1, [&] {
 		this->about();
 	});
-	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), "About &Qt", [=] {
+	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), "About &Qt", [&] {
 		this->aboutQt();
 	});
+
+	this->graph = new EntityGraph(this);
+	this->setCentralWidget(this->graph);
 
 	// Finalize window
 	this->clearContents();
