@@ -3,4 +3,4 @@
   <h1>EntGraph</h1>
 </div>
 
-Todo: write readme
+A node editor for Source engine map entity I/O 

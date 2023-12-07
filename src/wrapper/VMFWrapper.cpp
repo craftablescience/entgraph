@@ -1,37 +1,37 @@
 #include "VMFWrapper.h"
 
+// I made the library I'm allowed to do this
 #include <vmfpp/detail/StringUtils.h>
 #include <vmfpp/Reader.h>
 
-VMFWrapper::VMFWrapper(const QString& filePath_)
-		: filePath(filePath_) {
+EntityKVParser::EntityKVParser(const QString& contents) {
 	vmfpp::Reader reader;
-	this->valid = reader.readFile(this->root, this->filePath.toStdString());
+	this->valid = reader.readData(this->root, contents.toStdString());
 }
 
-bool VMFWrapper::isOpen() const {
+bool EntityKVParser::isValid() const {
 	return this->valid;
 }
 
-VMFWrapper::operator bool() const {
-	return this->isOpen();
+EntityKVParser::operator bool() const {
+	return this->isValid();
 }
 
-QList<VMFEntity> VMFWrapper::getEntities() const {
-	QList<VMFEntity> entities;
+QList<EntityKV> EntityKVParser::getEntities() const {
+	QList<EntityKV> entities;
 	if (!this->valid || !this->root.hasSection(vmfpp::DEFAULT_SECTIONS::ENTITY)) {
 		return entities;
 	}
 	const auto& entitySection = this->root.getSection(vmfpp::DEFAULT_SECTIONS::ENTITY);
 	for (const auto& entity : entitySection) {
-		VMFEntity entData;
-		entData.id = std::stoi(entity.getValue("id").at(0).data());
+		EntityKV entData;
+		entData.id = std::stoi(entity.getValue("id").at(0));
 		entData.classname = entity.getValue("classname").at(0).data();
 		entData.targetname = entity.hasValue("targetname") ? entity.getValue("targetname").at(0).data() : "";
 		if (entity.hasChild("connections")) {
 			for (const auto& connection : entity.getChild("connections")) {
 				for (const auto& [connectionOutput, connectionInfos] : connection.getValues()) {
-					VMFEntityConnection entConnectionData;
+					EntityConnectionKV entConnectionData;
 					entConnectionData.output = connectionOutput.c_str();
 					for (const auto& connectionInfo : connectionInfos) {
 						std::vector<std::string> infoParts;

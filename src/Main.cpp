@@ -4,14 +4,14 @@
 #include <QSettings>
 #include <QStyle>
 
-#include "cfg/Config.h"
-#include "Options.h"
+#include "config/Config.h"
+#include "config/Options.h"
 #include "Window.h"
 
 int main(int argc, char** argv) {
     QApplication app(argc, argv);
 
-    QCoreApplication::setOrganizationName(ENTGRAPH_ORGANIZATION_NAME);
+    QCoreApplication::setOrganizationName(ENTGRAPH_PROJECT_ORGANIZATION_NAME);
     QCoreApplication::setApplicationName(ENTGRAPH_PROJECT_NAME);
     QCoreApplication::setApplicationVersion(ENTGRAPH_PROJECT_VERSION);
 
@@ -20,15 +20,15 @@ int main(int argc, char** argv) {
 #endif
 
     std::unique_ptr<QSettings> options;
-    if (isStandalone()) {
+    if (Options::isStandalone()) {
         auto configPath = QApplication::applicationDirPath() + "/config.ini";
         options = std::make_unique<QSettings>(configPath, QSettings::Format::IniFormat);
     } else {
         options = std::make_unique<QSettings>();
     }
-    setupOptions(*options);
+    Options::setupOptions(*options);
 
-    auto* window = new Window(*options);
+    auto* window = new Window();
     window->show();
 
     return QApplication::exec();

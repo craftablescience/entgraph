@@ -12,7 +12,7 @@ class Window : public QMainWindow {
 	Q_OBJECT;
 
 public:
-	explicit Window(QSettings& options, QWidget* parent = nullptr);
+	explicit Window(QWidget* parent = nullptr);
 
 	void open(const QString& startPath = QString());
 

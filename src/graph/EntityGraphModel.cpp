@@ -1,5 +1,7 @@
 #include "EntityGraphModel.h"
 
+#include <utility>
+
 std::unordered_set<NodeId> EntityGraphModel::allNodeIds() const {
 	return this->nodeIds;
 }
@@ -36,7 +38,7 @@ NodeId EntityGraphModel::addNode(QString nodeType) {
 NodeId EntityGraphModel::addNode(QString nodeType, NodeId nodeId) {
 	this->nodeIds.insert(nodeId);
 	this->nodes[nodeId] = NodeData{};
-	this->nodes[nodeId].type = nodeType;
+	this->nodes[nodeId].type = std::move(nodeType);
 	Q_EMIT this->nodeCreated(nodeId);
 	return nodeId;
 }

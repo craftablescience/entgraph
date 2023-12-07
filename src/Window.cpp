@@ -11,14 +11,14 @@
 #include <QStyle>
 #include <QStyleFactory>
 
-#include "cfg/Config.h"
+#include "config/Config.h"
+#include "config/Options.h"
 #include "graph/EntityGraph.h"
 #include "wrapper/VMFWrapper.h"
-#include "Options.h"
 
 constexpr auto VMF_SAVE_FILTER = "Valve Map Format (*.vmf);;All files (*.*)";
 
-Window::Window(QSettings& options, QWidget* parent)
+Window::Window(QWidget* parent)
 		: QMainWindow(parent)
 		, modified(false) {
 	this->setWindowIcon(QIcon(":/icon.png"));
@@ -53,12 +53,12 @@ Window::Window(QSettings& options, QWidget* parent)
 	auto* themeMenuGroup = new QActionGroup(this);
 	themeMenuGroup->setExclusive(true);
 	for (const auto& themeName : QStyleFactory::keys()) {
-		auto* action = themeMenu->addAction(themeName, [=, &options] {
+		auto* action = themeMenu->addAction(themeName, [=] {
 			QApplication::setStyle(themeName);
-			options.setValue(OPT_STYLE, themeName);
+			Options::set(OPT_STYLE, themeName);
 		});
 		action->setCheckable(true);
-		if (themeName == options.value(OPT_STYLE).toString()) {
+		if (themeName == Options::get<QString>(OPT_STYLE)) {
 			action->setChecked(true);
 		}
 		themeMenuGroup->addAction(action);
@@ -69,7 +69,7 @@ Window::Window(QSettings& options, QWidget* parent)
 	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), tr("&About"), Qt::Key_F1, [&] {
 		this->about();
 	});
-	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), "About &Qt", [&] {
+	helpMenu->addAction(this->style()->standardIcon(QStyle::SP_DialogHelpButton), "About &Qt", Qt::ALT | Qt::Key_F1, [&] {
 		this->aboutQt();
 	});
 

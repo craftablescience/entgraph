@@ -64,6 +64,7 @@ jobs:
             ${{env.BUILD_DIR}}/imageformats/*.dll
             ${{env.BUILD_DIR}}/platforms/*.dll
             ${{env.BUILD_DIR}}/styles/*.dll
+            ${{env.BUILD_DIR}}/tls/*.dll
           retention-days: 7
 
       - name: Create Installer
@@ -83,7 +84,7 @@ jobs:
     strategy:
       matrix:
         build_type: [Debug, Release]
-        compiler: [gcc]
+        compiler: [gcc, clang]
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout Repository
@@ -92,7 +93,7 @@ jobs:
           submodules: recursive
 
       - name: Install Necessary Packages
-        run: sudo apt update && sudo apt install -y cmake build-essential ninja-build
+        run: sudo apt update && sudo apt install -y cmake build-essential ninja-build chrpath
 
       - name: Install GCC
         if: ${{ matrix.compiler == 'gcc' }}
@@ -107,7 +108,7 @@ jobs:
         with:
           version: 15
           platform: x64
-      
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -127,6 +128,20 @@ jobs:
         working-directory: ${{env.BUILD_DIR}}
         run: cmake --build . --config ${{matrix.build_type}} -t entgraph -- -j$(nproc)
 
+      - name: Fixup Binaries
+        run: |
+          chmod +x '${{env.BUILD_DIR}}/entgraph'
+
+          # runpath cleanup for the Qt binaries. These are (mostly) wrong, leading to crashes
+          for f in ${{env.BUILD_DIR}}/*.so*; do
+            echo "Fixing $f..."
+            chrpath -r '$ORIGIN' "$f"
+          done
+          for f in ${{env.BUILD_DIR}}/*/*.so*; do
+            echo "Fixing $f..."
+            chrpath -r '$ORIGIN/..' "$f"
+          done
+
       - name: Upload Standalone
         uses: actions/upload-artifact@v3
         with:
@@ -136,11 +151,16 @@ jobs:
             ${{env.BUILD_DIR}}/LICENSE
             ${{env.BUILD_DIR}}/entgraph
             ${{env.BUILD_DIR}}/*.so*
+            ${{env.BUILD_DIR}}/egldeviceintegrations/*.so*
             ${{env.BUILD_DIR}}/imageformats/*.so*
+            ${{env.BUILD_DIR}}/platforminputcontexts/*.so*
             ${{env.BUILD_DIR}}/platforms/*.so*
             ${{env.BUILD_DIR}}/platformthemes/*.so*
-            ${{env.BUILD_DIR}}/styles/*.so*
+            ${{env.BUILD_DIR}}/tls/*.so*
+            ${{env.BUILD_DIR}}/wayland-decoration-client/*.so*
+            ${{env.BUILD_DIR}}/wayland-graphics-integration-client/*.so*
             ${{env.BUILD_DIR}}/wayland-shell-integration/*.so*
+            ${{env.BUILD_DIR}}/xcbglintegrations/*.so*
           retention-days: 7
 
       - name: Create Installer

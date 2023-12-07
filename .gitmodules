@@ -1,9 +1,15 @@
-[submodule "src/thirdparty/speedykeyv"]
-	path = src/thirdparty/speedykeyv
-	url = https://github.com/ozxybox/SpeedyKeyV
 [submodule "src/thirdparty/nodeeditor"]
 	path = src/thirdparty/nodeeditor
 	url = https://github.com/craftablescience/nodeeditor
+[submodule "src/thirdparty/sapp"]
+	path = src/thirdparty/sapp
+	url = https://github.com/Trico-Everfire/SteamAppPathProvider
+[submodule "src/thirdparty/speedykeyv"]
+	path = src/thirdparty/speedykeyv
+	url = https://github.com/ozxybox/SpeedyKeyV
 [submodule "src/thirdparty/vmfpp"]
 	path = src/thirdparty/vmfpp
 	url = https://github.com/craftablescience/vmfpp
+[submodule "src/thirdparty/vtflib"]
+	path = src/thirdparty/vtflib
+	url = https://github.com/StrataSource/VTFLib

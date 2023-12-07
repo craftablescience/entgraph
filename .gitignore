@@ -8,5 +8,4 @@ cmake-build-*/
 
 # Generated
 installer/deb/entgraph.desktop
-installer/deb/entgraph.sh
-src/cfg/Config.h
+src/config/Config.h

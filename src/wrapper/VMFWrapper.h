@@ -5,7 +5,7 @@
 
 #include <vmfpp/VMF.h>
 
-struct VMFEntityConnection {
+struct EntityConnectionKV {
 	QString output;
 	QString targetname;
 	QString input;
@@ -14,25 +14,24 @@ struct VMFEntityConnection {
 	int fireAmount;
 };
 
-struct VMFEntity {
+struct EntityKV {
 	int id;
 	QString classname;
 	QString targetname;
-	QList<VMFEntityConnection> connections;
+	QList<EntityConnectionKV> connections;
 };
 
-class VMFWrapper {
+class EntityKVParser {
 public:
-	explicit VMFWrapper(const QString& filePath_);
+	explicit EntityKVParser(const QString& contents);
 
-	[[nodiscard]] bool isOpen() const;
+	[[nodiscard]] bool isValid() const;
 
 	[[nodiscard]] explicit operator bool() const;
 
-	[[nodiscard]] QList<VMFEntity> getEntities() const;
+	[[nodiscard]] QList<EntityKV> getEntities() const;
 
 private:
-	QString filePath;
 	vmfpp::Root root;
 	bool valid;
 };
